@@ -2,6 +2,7 @@ require('../models')
 const request = require('supertest');
 const app = require('../app');
 const Category = require('../models/Category');
+const ProductImg = require('../models/ProductImg');
 
 const  URL_BASE = '/api/v1/products';
 
@@ -9,6 +10,7 @@ let TOKEN;
 let productId;
 let category;
 let product;
+let image
 
 
 beforeAll(async () =>{
@@ -91,11 +93,32 @@ test("PUT 'URL_BASE/:id', should return status code 200 and res.body.title === b
     
 })
 
+test("POST 'URL_BASE/:id/images', should return status code 200 and res.body.length === 1", async()=>{
+    const imageBody ={
+        url: 'lorem12',
+        filename: 'lorem29',
+    }
+
+    image = await ProductImg.create(imageBody);
+    const res = await request(app)
+        .post(`${URL_BASE}/${productId}/images`)
+        .send([image.id])
+        .set('Authorization', `Bearer ${TOKEN}`)
+
+    expect(res.status).toBe(200)
+    expect(res.body).toBeDefined()
+    expect(res.body).toHaveLength(1)
+})
+
 test("DELETE 'URL_BASE/:id', should return status code 204", async () =>{
     const res = await request(app)
         .delete(`${URL_BASE}/${productId}`)
         .set('Authorization', `Bearer ${TOKEN}`)
     expect(res.status).toBe(204)
 
+
+
+    await image.destroy();
     await category.destroy(); //!esto siempre debe estar al ultimo
+    
 })
